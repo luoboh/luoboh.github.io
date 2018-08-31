@@ -79,17 +79,17 @@
 
 
 
-<meta name="description" content="准研一暑假在武大的学习记录 分布式、并行、集群、云计算分布式与并行 分布式计算与集中化计算相反，侧重点在于依靠网络通信完成计算，直观的说需要在多台计算机上完成一件事，而如何协调多台计算机完成一件工作就是分布式的重点，包括计算任务的分配，资源的调度，任务监控和容错等等，从计算分解的角度来说，也是一种并行计算。 并行计算是与顺序计算相对应的概念，强调并行的做一件事，并行不一定分布，不一定需要网络通信，">
+<meta name="description" content="2018年7月8月的学习记录，从零开始了解分布式，docker，kubernetes">
 <meta property="og:type" content="article">
 <meta property="og:title" content="分布式 容错">
 <meta property="og:url" content="http://yoursite.com/2018/08/31/分布式-容错/index.html">
 <meta property="og:site_name" content="luoboh">
-<meta property="og:description" content="准研一暑假在武大的学习记录 分布式、并行、集群、云计算分布式与并行 分布式计算与集中化计算相反，侧重点在于依靠网络通信完成计算，直观的说需要在多台计算机上完成一件事，而如何协调多台计算机完成一件工作就是分布式的重点，包括计算任务的分配，资源的调度，任务监控和容错等等，从计算分解的角度来说，也是一种并行计算。 并行计算是与顺序计算相对应的概念，强调并行的做一件事，并行不一定分布，不一定需要网络通信，">
+<meta property="og:description" content="2018年7月8月的学习记录，从零开始了解分布式，docker，kubernetes">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-08-31T09:58:35.268Z">
+<meta property="og:updated_time" content="2018-08-31T11:56:25.051Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="分布式 容错">
-<meta name="twitter:description" content="准研一暑假在武大的学习记录 分布式、并行、集群、云计算分布式与并行 分布式计算与集中化计算相反，侧重点在于依靠网络通信完成计算，直观的说需要在多台计算机上完成一件事，而如何协调多台计算机完成一件工作就是分布式的重点，包括计算任务的分配，资源的调度，任务监控和容错等等，从计算分解的角度来说，也是一种并行计算。 并行计算是与顺序计算相对应的概念，强调并行的做一件事，并行不一定分布，不一定需要网络通信，">
+<meta name="twitter:description" content="2018年7月8月的学习记录，从零开始了解分布式，docker，kubernetes">
 
 
 
@@ -299,8 +299,10 @@
       
 
       
-        <pre><code>准研一暑假在武大的学习记录
-</code></pre><h1 id="分布式、并行、集群、云计算"><a href="#分布式、并行、集群、云计算" class="headerlink" title="分布式、并行、集群、云计算"></a>分布式、并行、集群、云计算</h1><h2 id="分布式与并行"><a href="#分布式与并行" class="headerlink" title="分布式与并行"></a>分布式与并行</h2><p> 分布式计算与集中化计算相反，侧重点在于依靠网络通信完成计算，直观的说需要在多台计算机上完成一件事，而如何协调多台计算机完成一件工作就是分布式的重点，包括计算任务的分配，资源的调度，任务监控和容错等等，从计算分解的角度来说，也是一种并行计算。<br> 并行计算是与顺序计算相对应的概念，强调并行的做一件事，并行不一定分布，不一定需要网络通信，可以在一台 高性能计算机上实现，所以说并行计算不一定是分布式计算，并行计算范围更广泛。</p>
+        <hr>
+<pre><code>2018年7月8月的学习记录，从零开始了解分布式，docker，kubernetes
+</code></pre><a id="more"></a>
+<h1 id="分布式、并行、集群、云计算"><a href="#分布式、并行、集群、云计算" class="headerlink" title="分布式、并行、集群、云计算"></a>分布式、并行、集群、云计算</h1><h2 id="分布式与并行"><a href="#分布式与并行" class="headerlink" title="分布式与并行"></a>分布式与并行</h2><p> 分布式计算与集中化计算相反，侧重点在于依靠网络通信完成计算，直观的说需要在多台计算机上完成一件事，而如何协调多台计算机完成一件工作就是分布式的重点，包括计算任务的分配，资源的调度，任务监控和容错等等，从计算分解的角度来说，也是一种并行计算。<br> 并行计算是与顺序计算相对应的概念，强调并行的做一件事，并行不一定分布，不一定需要网络通信，可以在一台 高性能计算机上实现，所以说并行计算不一定是分布式计算，并行计算范围更广泛。</p>
 <h2 id="分布式与集群"><a href="#分布式与集群" class="headerlink" title="分布式与集群"></a>分布式与集群</h2><p> 当一台服务器对于提供的服务而言不够用时，多加一台服务器做相同的事，能够独立提供相同的服务，再后来，服务器多了，在前端部署一个调度器，当请求到来时转发给负担较轻的服务器，实现负载均衡，这时每个服务器都能提供完整的业务功能。如果将这个业务按功能划分为不同的模块，形成业务子系统，部署在不同的计算机上，各计算机之间通过RPC（远程过程调用）通信，共同完成一个服务，这样的模式成为分布式。</p>
 <h2 id="云计算"><a href="#云计算" class="headerlink" title="云计算"></a>云计算</h2><p> 云计算是一种商业概念，以服务的形式提供各种资源，比如计算资源、存储资源等等，而后端用到的技术就有分布式、集群、虚拟化等等，将这些东西对用户透明化，用户只需账号购买资源即可，云计算有三大服务，基础设施即服务（LaaS）,平台即服务（PaaS），软件即服务（SaaS）。</p>
 <h1 id="分布式的关键技术"><a href="#分布式的关键技术" class="headerlink" title="分布式的关键技术"></a>分布式的关键技术</h1><p> 网络通信最开始有7层，从低到高分别是物理层，数据链路层，网络层，传输层，会话层，表示层，应用层，后来变为5层，会话层和表示层合并为中间件层，中间件层是一些与应用程序无关的一些协议，比如认证协议，分布式锁协议等等，各种中间件协议可以看作服务，提供各种通信服务。<br> 通信类型有持久通信和瞬时通信，持久通信里提交的消息由通信中间件存储起来，瞬时通信中的消息只有消息发送方和接收方都在运行时才能存储，如果传输中断或者有一方没有运行了，中间件就不能传递消息了。<br> 通信类型还有异步通信和同步通信，异步是指发送方发送消息后继续运行，同步通信是指发送方发送消息后被阻塞，直到消息被接收。利用套接字实现的通信时面对消息的瞬时通信，消息队列是面对消息的持久通信。</p>
@@ -328,35 +330,6 @@
 
     
 
-    
-      <div>
-        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
-  <div></div>
-  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
-    <span>打赏</span>
-  </button>
-  <div id="QR" style="display: none;">
-
-    
-      <div id="wechat" style="display: inline-block">
-        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="MengHan 微信支付"/>
-        <p>微信支付</p>
-      </div>
-    
-
-    
-      <div id="alipay" style="display: inline-block">
-        <img id="alipay_qr" src="/images/alipay.jpg" alt="MengHan 支付宝"/>
-        <p>支付宝</p>
-      </div>
-    
-
-    
-
-  </div>
-</div>
-
-      </div>
     
 
     
