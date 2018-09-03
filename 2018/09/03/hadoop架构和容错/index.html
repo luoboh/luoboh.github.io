@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="HDFS,MapReduce及YARN简单了解（此学习记录来源于各路大神博客，如有不妥之处会立刻删除）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hadoop架构和容错">
+<meta property="og:url" content="http://yoursite.com/2018/09/03/hadoop架构和容错/index.html">
+<meta property="og:site_name" content="luoboh">
+<meta property="og:description" content="HDFS,MapReduce及YARN简单了解（此学习记录来源于各路大神博客，如有不妥之处会立刻删除）">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/images/HDFS.png">
+<meta property="og:image" content="http://yoursite.com/images/yarn.png">
+<meta property="og:image" content="http://yoursite.com/images/yarn_workingFlow.png">
+<meta property="og:updated_time" content="2018-09-03T09:31:05.488Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hadoop架构和容错">
+<meta name="twitter:description" content="HDFS,MapReduce及YARN简单了解（此学习记录来源于各路大神博客，如有不妥之处会立刻删除）">
+<meta name="twitter:image" content="http://yoursite.com/images/HDFS.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/09/03/hadoop架构和容错/"/>
+
+
+
+
+
+  <title>Hadoop架构和容错 | luoboh</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">luoboh</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">hello world</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/03/hadoop架构和容错/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="MengHan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="luoboh">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Hadoop架构和容错</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-03T15:54:03+08:00">
+                2018-09-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <pre><code>HDFS,MapReduce及YARN简单了解（此学习记录来源于各路大神博客，如有不妥之处会立刻删除）
+</code></pre><a id="more"></a>
+<p>Hadoop有4大组件:<br>HDFS：分布式存储系统<br>MapReduce：分布式计算系统<br>YARN：分布式资源调度<br>Common：以上3大组件的底层支撑组件，提供基础工具包和RPC框架</p>
+<h1 id="HDFS"><a href="#HDFS" class="headerlink" title="HDFS"></a>HDFS</h1><p> <img src="/images/HDFS.png" alt=""> </p>
+<p> Namenode：整个文件系统的管理节点，维护着1.整个文件系统的文件目录树2.文件目录的元信息和每个文件对应的数据块列表3.接收用户的操作请求<br>Datanode：提供真实文件数据的存储服务<br>SecondNamenode:监控HDFS的辅助后台程序，每个集群都有一个SecondNamenode，且单独部署在一个服务器上，不接收\记录任何实时数据的变化，会周期性的将EditsLog文件中记录对HDFS的操作合并到一个FsImage文件，然后清空EditsLog文件，当Namenode重启时就加载Fslmage文件。</p>
+<h2 id="HDFS容错机制"><a href="#HDFS容错机制" class="headerlink" title="HDFS容错机制"></a>HDFS容错机制</h2><h3 id="故障类型"><a href="#故障类型" class="headerlink" title="故障类型"></a>故障类型</h3><p>节点故障：namenode和DataNode故障<br>网络故障：无法接收和发送数据<br>数据损坏：在不稳定的网络传输中出错或者在硬件存储过程中出错</p>
+<h3 id="故障检测"><a href="#故障检测" class="headerlink" title="故障检测"></a>故障检测</h3><p>节点故障检测：DN固定周期比如每三秒向ND发送心跳信号，如果ND在限定时间内比如10分钟没有接收到DN的信号，就判断DN出现故障<br>通信故障检测：只要发送了数据，接收方成功接收会发送确认码，如果发送方尝试发送好几次都没有接收到返回的确认码，则认为网络故障或对方故障<br>数据错误检测：在传输数据时，会同时传输数据的总和校验码，接收到存储数据时也会存储校验码，DN会定期向NN发送数据块存储清单，在发送前，DN会检查总和校验码是否正确，如果不正确，就不发送这个数据块。如果DN发送的数据块清单说有4个数据块，但NN记录这个DN节点有5个数据块，那么NN就知道这个DN节点有1个数据块损坏。<br>DN会定期向NN发送心跳信号和数据块清单。</p>
+<h3 id="读写容错"><a href="#读写容错" class="headerlink" title="读写容错"></a>读写容错</h3><p>写容错：当向DN1写入数据时，首先在DN1上保存至多1个副本，再在另一个机架上选择至多2个DN保存副本，此时的副本是从DN1上复制的，<br>当每个DN接收到数据后会返回确认信息，当某个DN没有发送确认信息，在后面的写容错中就会跳过这个DN，NN同时记录此时的数据块是低于指定备份数量的数据块。<br>读容错：当NN询问数据块地址时，会得到所有存有这个数据的DN列表，当无法从某个DN上读取数据时，就从另一个DN上读取。</p>
+<h3 id="DN故障和数据块损坏容错"><a href="#DN故障和数据块损坏容错" class="headerlink" title="DN故障和数据块损坏容错"></a>DN故障和数据块损坏容错</h3><p>NN上会保存这样两张表</p>
+<p>表1：<br>数据块1（DN1,DN2,DN3,…）<br>数据块2（DN1,DN2,DN3,…）<br>。。。</p>
+<p>表2：<br>DN1（数据块1，数据块2，数据块3,…）<br>DN2 (数据块1，数据块2，数据块3,…)<br>。。。  </p>
+<p>当某个DN上某个数据块损坏，更改表1，当某个DN损坏，表1和表2都更改。<br>NN会周期性扫描表1和2，发现某个数据块副本数低于指定备份数，会找一个DN从已备份的DN上复制</p>
+<h3 id="选择DN进行数据备份的原则"><a href="#选择DN进行数据备份的原则" class="headerlink" title="选择DN进行数据备份的原则"></a>选择DN进行数据备份的原则</h3><p>首先本地DN备份，再选取其他机架上的DN，对于一个数据块来说，一个DN上最多一份副本，一个机架上最多2个DN存有副本</p>
+<h3 id="NN故障"><a href="#NN故障" class="headerlink" title="NN故障"></a>NN故障</h3><p>（1）secondNamenode可以处理namenode失效的情况，其次可以通过ZooKeeper实现Namenode备份，在HDFS系统中配置多个NameNode，并向Zookeeper注册自己的存在。即可通过Zookeeper的Watch和Dispatch实现各NameNode之间的协同<br>（2）FaceBook提出了Avatar机制来解决NameNode 的单点问题，这里多设置了一个叫做 Standby NameNode 的结点，原来的NameNode  叫做 PrimaryNameNode, 另外还有一个结点 NFS 用来存储 Primary NameNode 的日志和镜像文件。这里跟前面的解决机制不同的是 Standby NameNode 这个结点是 热备结点， 它不仅具有前面的CheckPoint的功能，还会周期性的读取 NFS结点上的 PrimaryNameNode 的日志来保持命名空间的同步，此外 DataNode 会同时向 Standby NameNode 和 PrimaryNameNode 发送心跳信息和数据块信息，这样，这两个结点的元数据信息是一致的，因此这也是为什么是热备结点的原因了。</p>
+<h1 id="MapReduce"><a href="#MapReduce" class="headerlink" title="MapReduce"></a>MapReduce</h1><h2 id="物理实体"><a href="#物理实体" class="headerlink" title="物理实体"></a>物理实体</h2><h3 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h3><p>编写MapReduce程序，MapReduce计算阶段包括map阶段和reduce阶段，都是用键值对（key/value）作为输入（input）和输出（output），map和reduce都是由tasktracker完成，一个MapReduce任务也叫MapReduce作业，由一个jobtracker安排计算。配置作业，提交作业，程序员完成。</p>
+<h3 id="JobTracker"><a href="#JobTracker" class="headerlink" title="JobTracker"></a>JobTracker</h3><p>初始化作业，分配作业，与tasktracker通信，协调整个作业的完成。</p>
+<h3 id="TaskTracker"><a href="#TaskTracker" class="headerlink" title="TaskTracker"></a>TaskTracker</h3><p>保持与jobtracker的通信，在分配的数据片段上执行map或reduce任务。</p>
+<h3 id="HDFS-1"><a href="#HDFS-1" class="headerlink" title="HDFS"></a>HDFS</h3><p>保存作业的数据、配置信息等，也保存最后的作业。</p>
+<h3 id="运行过程"><a href="#运行过程" class="headerlink" title="运行过程"></a>运行过程</h3><ol>
+<li>当客户端编写MapReduce程序，提交给jobtracker，jobtracker构建这个job，分配一个新的job任务ID值；  </li>
+<li>接下来会做一个检查操作，检查输出目录是否存在，如果存在，jobtracker会抛出错误给客户端，再检查输入目录是否存在，<br>如果不存在抛出错误；  </li>
+<li>如果存在jobtracker会根据输入计算输入分片（input split），如果分片计算不出来也会抛出错误；input split的计算是提高系统效率的关键</li>
+<li>计算好输入分片后jobtracker会配置完成job需要的资源，分配好资源后jobtracker会将job放入一个内部的队列，让配置好的作业调度器能调度到这个作业，作业调度器会初始化这个job，创建一个正在运行的job对象（封装任务和记录信息），以便jobtracker跟踪job的状态和进程，</li>
+<li>初始化完成后，作业调度器会获取input split信息，每个分片创建一个map任务</li>
+<li>接下来是任务分配，此时tasktracker会运行一个简单的循环机制定期发送心跳给jobtracker，心跳间隔是5秒，程序员可以配置这个时间，心跳是jobtracker和tasktracker沟通的桥梁，通过心跳，jobtracker可以监控tasktracker是否存活，也可以获取tasktracker处理的状态和问题，同时tasktracker也可以通过心跳里的返回值获取jobtracker给它的操作指令</li>
+<li>执行任务，这时jobtracker可以通过心跳机制监控tasktracker的状态和进度，同时也能计算出整个job的状态和进度，而tasktracker也可以本地监控自己的状态和进度。当jobtracker获得了最后一个完成指定任务的tasktracker操作成功的通知是，jobtracker会把整个job状态置为成功，当客户端查询JOB运行状态时（异步操作），会查到job完成的通知。</li>
+</ol>
+<h2 id="逻辑实体"><a href="#逻辑实体" class="headerlink" title="逻辑实体"></a>逻辑实体</h2><p>包括输入分片（input split）、map阶段、combiner阶段、shuffle阶段和reduce阶段  </p>
+<h3 id="input-split"><a href="#input-split" class="headerlink" title="input split"></a>input split</h3><p>在map阶段前，对输入文件计算输入分片，每个输入分片针对一个map任务，输入分片存储的不是数据本身，而是一个分片长度和一个记录数据位置的数组，input split和hdfs的block关系密切，假如我们设定hdfs的块的大小是64mb，如果我们输入有三个文件，大小分别是3mb、65mb和127mb，那么mapreduce会把3mb文件分为一个输入分片（input split），65mb则是两个输入分片（input split）而127mb也是两个输入分片（input split），换句话说我们如果在map计算前做输入分片调整，例如合并小文件，那么就会有5个map任务将执行，而且每个map执行的数据大小不均，这个也是mapreduce优化计算的一个关键点。</p>
+<h3 id="map阶段"><a href="#map阶段" class="headerlink" title="map阶段"></a>map阶段</h3><p>就是程序员编写好的map函数了，因此map函数效率相对好控制，而且一般map操作都是本地化操作也就是在数据存储节点上进行；</p>
+<h3 id="combiner阶段"><a href="#combiner阶段" class="headerlink" title="combiner阶段"></a>combiner阶段</h3><p>combiner是一个本地化的reduce操作，是map运算的后续操作，主要是在map计算出一个中间文件前做一个简单的合并重复key值得操作。例如我们对文件里的单词频率做统计，map计算时候如果碰到一个hadoop的单词就会记录为1，但是这篇文章里hadoop可能会出现n多次，那么map输出文件冗余就会很多，因此在reduce计算前对相同的key做一个合并操作，那么文件会变小，这样就提高了宽带的传输效率，毕竟hadoop计算力宽带资源往往是计算的瓶颈也是最为宝贵的资源，但是combiner操作是有风险的，使用它的原则是combiner的输入不会影响到reduce计算的最终输入，例如：如果计算只是求总数，最大值，最小值可以使用combiner，但是做平均值计算使用combiner的话，最终的reduce计算结果就会出错。</p>
+<h3 id="shuffle阶段"><a href="#shuffle阶段" class="headerlink" title="shuffle阶段"></a>shuffle阶段</h3><p>将map的输出作为reduce的输入的过程叫做shuffle，是MapReduce优化的重点地方。</p>
+<p>Map输出——&gt;写入硬盘完成存储——&gt;对map输出文件合并，作为reduce输入<br>写入硬盘完成存储：在内存中开辟一个环形内存缓冲区，默认大小是100mb，并在配置文件中为缓冲区设置一个阈值，默认0.8，大小和阈值都可以在配置文件中自己设定，当缓冲区达到80%时，由一个守护进程将数据写入硬盘，在写入硬盘时对结果进行排序，如果还定义了combiner，完成combiner后再排序，写入硬盘的过程称为spill，每个spill都会生成一个溢出文件，在写入硬盘时也会同时写入内存，当缓冲区满了，写入内存操作停止，继续写入硬盘操作，直到map输出文件存储完成<br>对map输出文件合并，作为reduce输入：当map输出完成，由partitioner操作完成reduce输入，一个partitioner对应一个reduce，partitioner找到对应的map输出文件并对其进行复制，复制时reduce会开启几个线程，默认是5个，复制过程与写入硬盘过程类似，会有阈值和内存大小，阀值一样可以在配置文件里配置，而内存大小是直接使用reduce的tasktracker的内存大小，复制时候reduce还会进行排序操作和合并文件操作，这些操作完了就会进行reduce计算了。Partitioner的操作相当于对reduce的输入分片。</p>
+<h3 id="reduce阶段"><a href="#reduce阶段" class="headerlink" title="reduce阶段"></a>reduce阶段</h3><p>和map函数一样也是程序员编写的，最终结果是存储在hdfs上的。</p>
+<h2 id="MapReduce容错"><a href="#MapReduce容错" class="headerlink" title="MapReduce容错"></a>MapReduce容错</h2><h3 id="Jobtracker："><a href="#Jobtracker：" class="headerlink" title="Jobtracker："></a>Jobtracker：</h3><p>没有容错机制，必须人工介入重启，但可以通过配置参数，在jobtracker重启后让作业恢复运行，在history log中记录各个作业运行状态，在jobtracker关闭后，系统中所有数据目录（包括各种临时目录）均会被保留，待JobTracker重启之后，JobTracker自动重新提交这些作业，并只对未运行完成的task进行重新调度，这样可避免已经计算完的task重新计算。 </p>
+<h3 id="Tasktracker"><a href="#Tasktracker" class="headerlink" title="Tasktracker"></a>Tasktracker</h3><p>（1）汇报心跳，mapred.tasktracker.expiry.interval，默认值是10min， 当TaskTracker超过mapred.tasktracker.expiry.interval时间间隔没有向JobTracker汇报心跳，则JobTracker视之为死亡，并将之从调度池中剔除。安排上一个成功运行的map任务返回<br>（2）exclude nodes，用户可以在mapred.hosts.exclude或者mapred.hosts中指定一个文件，该文件一行是一个tasktracker host，表示这些节点不允许接入集群，也就是不会被分配task。该文件在Hadoop-0.21.0版本中可以动态加载。<br>（3）黑名单（biacklist）health-check script脚本判断该节点是健康，不健康，直接加入黑名单。<br>（4）灰名单（graylist）采用了启发式算法发现的有问题的节点，加入灰名单。<br>mapred.jobtracker.blacklist.fault-timeout-window：默认是3小时，时间窗口，计算该时间内失败的task个数<br>如果满足以下条件，则将tasktracker加入灰名单：<br>mapred.max.tracker.blacklists：默认是4，bad tasktracker阈值，当一个tasktracker在时间窗口内失败个数超过该阈值，则认为该tasktracker是bad tasktracker<br>mapred.cluster.average.blacklist.threshold，默认是0.5，如果一个bad tasktracker失败的task个数超过了所有tasktracker平均值的mapred.cluster.average.blacklist.threshold倍，则加入灰名单，不仅会自动加入黑名单。<br>重新启动该TaskTracker，就能够将它从黑名单和灰名单中删除。</p>
+<h3 id="Job："><a href="#Job：" class="headerlink" title="Job："></a>Job：</h3><p>mapred.max.tracker.failures：一个作业在某个tasktracker上失败的task个数超过该值，则该tasktracker被加到该job的blacklist中，从此不再往该tasktracker分配该job的task.<br>当一个job中task失败的次数超过设置的个数，则整个job失败，mapred.max.ap.failures.percent 解决这个问题。<br>如果一个 Job 有 200 个 MapTask ，参数设置为5，则单个 Job 最多允许 10 个 MapTask 失败（200×5%=10），<br>其可以在配置文件 mapred-site.xml 里修改。  </p>
+<h3 id="Task"><a href="#Task" class="headerlink" title="Task"></a>Task</h3><p>mapred.map.max.attempts：每个map task最大尝试次数<br>mapred.reduce.max.attempts：每个reduce task最大尝试次数<br>（1）    由自身mp代码导致的Map或者reduce任务失败，子任务JVM进程会在退出前向上一级tasktracker发送错误报告。<br>错误报告最后会记录在用户的错误日志里面，TaskTracker会将此次task attempt标记为failed，释放一个任务槽slot用来运行另一个任务。<br>（2）    子进程JVM突然退出，可能由于JVM的bug导致，从而导致MapReduce用户代码执行失败。在这种情况下，TaskTracker会监控到进程以便退出，并将此次attempt标记为“failed”失败。<br>（3）    关闭了超时连接（把超时timeout设置成0）。所以长时间运行的任务永不会被标记failed。在这种情况下，<br>被挂起的任务永远不会释放其所占用的任务槽slot，并随时间推移会降低整个集群的性能。</p>
+<h3 id="Record"><a href="#Record" class="headerlink" title="Record"></a>Record</h3><p>mapred.skip.map.max.skip.records：跳过坏记录条数（数据格式不对，空纪录等）。当遇到坏记录时，Hadoop尝试跳过的最多记录条数</p>
+<h3 id="磁盘"><a href="#磁盘" class="headerlink" title="磁盘"></a>磁盘</h3><p>用户可以配在mapred.local.dir参数配置多个磁盘目录，将map task中间结果分不到不同磁盘上，增强容错性。Map task临时结果将被轮询写到这些目录中，以避免某个磁盘目录数据过多。（轮询的方式仍然可能导致某个磁盘目录数据过多，最好的策略是每次选择数据最少的磁盘目录写入，采用小顶堆）。<br>用户日志userlogs可被分布不到不同磁盘目录中，减少单个磁盘日志写入压力。</p>
+<h2 id="MapReduce常见错误场景"><a href="#MapReduce常见错误场景" class="headerlink" title="MapReduce常见错误场景"></a>MapReduce常见错误场景</h2><ol>
+<li>任务阻塞，长时间占据资源<br>这种场景通常是由于软件Bug、数据特殊性等原因导致的，会让程序阻塞，任务运行停滞不前。在外界看来，任务（Task）好像阻塞了一样。这种事情经常发生，由于任务长时间占用着资源但不使用（如果不采取一定的手段，可能永远不会被使用，造成“资源泄露”），会导致资源利用率下降，对系统不利，那么，Hadoop MapReduce遇到这种情况如何处理呢？<br>在TaskTracker上，每个任务会定期向TaskTracker汇报新的进度（如果进度不变则不汇报），并由TaskTracker进一步汇报给JobTracker。当某个任务被阻塞时，它的进度将停滞不前，此时任务不会向TaskTracker汇报进度，这样，一定达到超时时间上限，TaskTracker会将该任务杀掉，并将任务状态（KILLED）汇报给JobTracker，进而触发JobTracker重新调度该任务。<br>在实际应用场景中，有些正常的作业，其任务可能长时间没有读入或者输出，比如读取数据库的Map Task或者需要连接其他外部系统的Task，对于这类应用，在编写Mapper或Reducer时，应当启动一个额外的线程通过Reporter组件定期向TaskTracker汇报心跳。</li>
+<li>作业的Map Task全部运行完成后，在Reduce Task运行过程中，某个Map Task所在节点挂了，或者Map结果存放磁盘损坏了，该如何处理？<br>（1）    如果节点挂了，JobTracker通过心跳机制知道TaskTracker死掉了，会重新调度之前正在运行的Task和正在运行的作业中已经运行完成的Map Task。<br>（2）    Map结果存放磁盘损坏，分两种情况：<br>所有的Reduce Task已经完成shuffle阶段和尚有部分Reduce Task没有完成shuffle阶段，需要读取该Map Task任务，<br>对于第一种情况，如果所有Reduce Task一路顺风地运行下去，则无需对已经运行完成的Map Task作任何处理，如果某些Reduce Task一段时间后运行失败了，则处理方式与第二种一样。<br>对于第二种情况，当Reduce Task远程读取那个已经运行完成的Map Task结果(但结果已经损坏)时，会尝试读取若干次，如果尝试次数超过了某个上限值，则会通过RPC告诉所在的TaskTracker该Map Task结果已经损坏，而TaskTracker则进一步通过RPC告诉JobTracker，JobTracker收到该消息后，会重新调度该Map Task，进而重新计算生成结果。</li>
+</ol>
+<p>需要强调的是，目前Hadoop MapReduce的实现中，Reduce Task重试读取Map Task结果的时间间隔是指数形式递增的，计算公式是10000*1.3^noFailedFetches，其中noFailedFetches取值范围为MAX{10， numMaps/30}，也就是说，如果map task数目是300，则需要尝试10次才会发现Map Task结果已经损坏，尝试时间间隔分别是10s，13s，21s，28s，37s，48s，62s，81s和106s，需要非常长的时间才能发现，而且Map Task越多，发现时间越慢，这个地方通常需要调优，因为任务数目越多的作业，越容易出现这种问题。</p>
+<h1 id="YARN"><a href="#YARN" class="headerlink" title="YARN"></a>YARN</h1><p><img src="/images/yarn.png" alt=""><br>YARN总体上是Master/Slave结构，主要由ResourceManager、NodeManager、 ApplicationMaster和Container等几个组件构成。</p>
+<h2 id="ResourceManager-RM"><a href="#ResourceManager-RM" class="headerlink" title="ResourceManager(RM)"></a>ResourceManager(RM)</h2><p>负责对各NM上的资源进行统一管理和调度。将AM分配空闲的Container运行并监控其运行状态。对AM申请的资源请求分配相应的空闲Container。主要由两个组件构成：调度器和应用程序管理器。</p>
+<h3 id="调度器（scheduler）"><a href="#调度器（scheduler）" class="headerlink" title="调度器（scheduler）"></a>调度器（scheduler）</h3><p>调度器根据容量、队列等限制条件（如每个队列分配一定的资源，最多执行一定数量的作业等），将系统中的资源分配给各个正在运行的应用程序。调度器仅根据各个应用程序的资源需求进行资源分配，而资源分配单位是Container，从而限定每个任务使用的资源量。Shceduler不负责监控或者跟踪应用程序的状态，也不负责任务因为各种原因而需要的重启（由ApplicationMaster负责）。总之，调度器根据应用程序的资源要求，以及集群机器的资源情况，为应用程序分配封装在Container中的资源。<br>调度器是可插拔的，例如CapacityScheduler、FairScheduler。</p>
+<h3 id="应用程序管理器（Application-Manager）"><a href="#应用程序管理器（Application-Manager）" class="headerlink" title="应用程序管理器（Application Manager）"></a>应用程序管理器（Application Manager）</h3><p>应用程序管理器负责管理整个系统中所有应用程序，包括应用程序提交、与调度器协商资源以启动AM、监控AM运行状态并在失败时重新启动等，跟踪分给的Container的进度、状态也是其职责。</p>
+<h2 id="NodeManager"><a href="#NodeManager" class="headerlink" title="NodeManager"></a>NodeManager</h2><p>NM是每个节点上的资源和任务管理器。它会定时地向RM汇报本节点上的资源使用情况和各个Container的运行状态；同时会接收并处理来自AM的Container 启动/停止等请求。</p>
+<h2 id="ApplicationMaster"><a href="#ApplicationMaster" class="headerlink" title="ApplicationMaster"></a>ApplicationMaster</h2><p>用户提交的应用程序均包含一个AM，负责应用的监控，跟踪应用执行状态，重启失败任务等。ApplicationMaster是应用框架，它负责向ResourceManager协调资源，并且与NodeManager协同工作完成Task的执行和监控。MapReduce就是原生支持的一种框架，可以在YARN上运行Mapreduce作业。有很多分布式应用都开发了对应的应用程序框架，用于在YARN上运行任务，例如Spark，Storm等。如果需要，我们也可以自己写一个符合规范的YARN application。</p>
+<h2 id="Container"><a href="#Container" class="headerlink" title="Container"></a>Container</h2><p>Container是YARN中的资源抽象，它封装了某个节点上的多维度资源，如内存、CPU、磁盘、网络等，当AM向RM申请资源时，RM为AM返回的资源便是用Container 表示的。 YARN会为每个任务分配一个Container且该任务只能使用该Container中描述的资源。它跟Linux Container没有任何关系，仅仅是YARN提出的一个概念（从实现上看，可看做一个可序列化/反序列化的Java类）。</p>
+<h2 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h2><p><img src="/images/yarn_workingFlow.png" alt=""><br>由上图YARN应用工作流程图可以看出，一个应用程序需要两类container，一类是运行ApplicationMaster的Container：这是由ResourceManager（向内部的资源调度器）申请和启动的，用户提交应用程序时，可指定唯一的ApplicationMaster所需的资源，另一类是运行各类任务的Container：这是由ApplicationMaster向ResourceManager申请的，并由ApplicationMaster与NodeManager通信以启动之。以上两类Container可能在任意节点上，它们的位置通常而言是随机的，即ApplicationMaster可能与它管理的任务运行在一个节点上。<br>1、用户向YARN中提交应用程序，其中包括AM程序、启动AM的命令、命令参数、用户程序等；事实上，需要准确描述运行ApplicationMaster的unix进程的所有信息。提交工作通常由YarnClient来完成。<br>2、RM为该应用程序分配第一个Container，并与对应的NM通信，要求它在这个Container中启动AM；<br>3、AM首先向RM注册，这样用户可以直接通过RM査看应用程序的运行状态，运行状态通过 AMRMClientAsync.CallbackHandler的getProgress() 方法来传递给RM。 然后它将为各个任务申请资源，并监控它的运行状态，直到运行结束，即重复步骤4〜7；<br>4、AM采用轮询的方式通过RPC协议向RM申请和领取资源；资源的协调通过 AMRMClientAsync异步完成,相应的处理方法封装在AMRMClientAsync.CallbackHandler中；<br>5、—旦AM申请到资源后，便与对应的NM通信，要求它启动任务；通常需要指定一个ContainerLaunchContext，提供Container启动时需要的信息；<br>6、Container运行时需提供内部执行的任务命令（可以使任何命令，比如java、Python、C++进程启动命令均可）以及该命令执行所需的环境变量和外部资源（比如词典文件、可执行文件、jar包等），由NM为任务设置好运行环境(包括环境变量、JAR包、二进制程序等)，设置好后，将任务启动命令写到一个脚本中，并通过运行该脚本启动任务；<br>7、各个任务通过某个RPC协议向AM汇报自己的状态和进度，以让AM随时掌握各个任务的运行状态，从而可以在任务失败时重新启动任务；ApplicationMaster与NM的通信通过NMClientAsync object来完成，容器的所有事件通过NMClientAsync.CallbackHandler来处理。例如启动、状态更新、停止等；<br>8、应用程序运行完成后，AM向RM注销并关闭自己。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/31/分布式-容错/" rel="next" title="分布式 容错">
+                <i class="fa fa-chevron-left"></i> 分布式 容错
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="MengHan" />
+            
+              <p class="site-author-name" itemprop="name">MengHan</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+          <div>
+             <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=22754969&auto=1&height=66"></iframe>
+          </div>
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#HDFS"><span class="nav-number">1.</span> <span class="nav-text">HDFS</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#HDFS容错机制"><span class="nav-number">1.1.</span> <span class="nav-text">HDFS容错机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#故障类型"><span class="nav-number">1.1.1.</span> <span class="nav-text">故障类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#故障检测"><span class="nav-number">1.1.2.</span> <span class="nav-text">故障检测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#读写容错"><span class="nav-number">1.1.3.</span> <span class="nav-text">读写容错</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DN故障和数据块损坏容错"><span class="nav-number">1.1.4.</span> <span class="nav-text">DN故障和数据块损坏容错</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#选择DN进行数据备份的原则"><span class="nav-number">1.1.5.</span> <span class="nav-text">选择DN进行数据备份的原则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NN故障"><span class="nav-number">1.1.6.</span> <span class="nav-text">NN故障</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#MapReduce"><span class="nav-number">2.</span> <span class="nav-text">MapReduce</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#物理实体"><span class="nav-number">2.1.</span> <span class="nav-text">物理实体</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#客户端"><span class="nav-number">2.1.1.</span> <span class="nav-text">客户端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JobTracker"><span class="nav-number">2.1.2.</span> <span class="nav-text">JobTracker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TaskTracker"><span class="nav-number">2.1.3.</span> <span class="nav-text">TaskTracker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HDFS-1"><span class="nav-number">2.1.4.</span> <span class="nav-text">HDFS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#运行过程"><span class="nav-number">2.1.5.</span> <span class="nav-text">运行过程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#逻辑实体"><span class="nav-number">2.2.</span> <span class="nav-text">逻辑实体</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#input-split"><span class="nav-number">2.2.1.</span> <span class="nav-text">input split</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#map阶段"><span class="nav-number">2.2.2.</span> <span class="nav-text">map阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#combiner阶段"><span class="nav-number">2.2.3.</span> <span class="nav-text">combiner阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#shuffle阶段"><span class="nav-number">2.2.4.</span> <span class="nav-text">shuffle阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#reduce阶段"><span class="nav-number">2.2.5.</span> <span class="nav-text">reduce阶段</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MapReduce容错"><span class="nav-number">2.3.</span> <span class="nav-text">MapReduce容错</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Jobtracker："><span class="nav-number">2.3.1.</span> <span class="nav-text">Jobtracker：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Tasktracker"><span class="nav-number">2.3.2.</span> <span class="nav-text">Tasktracker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Job："><span class="nav-number">2.3.3.</span> <span class="nav-text">Job：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Task"><span class="nav-number">2.3.4.</span> <span class="nav-text">Task</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Record"><span class="nav-number">2.3.5.</span> <span class="nav-text">Record</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#磁盘"><span class="nav-number">2.3.6.</span> <span class="nav-text">磁盘</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MapReduce常见错误场景"><span class="nav-number">2.4.</span> <span class="nav-text">MapReduce常见错误场景</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#YARN"><span class="nav-number">3.</span> <span class="nav-text">YARN</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ResourceManager-RM"><span class="nav-number">3.1.</span> <span class="nav-text">ResourceManager(RM)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#调度器（scheduler）"><span class="nav-number">3.1.1.</span> <span class="nav-text">调度器（scheduler）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#应用程序管理器（Application-Manager）"><span class="nav-number">3.1.2.</span> <span class="nav-text">应用程序管理器（Application Manager）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NodeManager"><span class="nav-number">3.2.</span> <span class="nav-text">NodeManager</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ApplicationMaster"><span class="nav-number">3.3.</span> <span class="nav-text">ApplicationMaster</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Container"><span class="nav-number">3.4.</span> <span class="nav-text">Container</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#工作流程"><span class="nav-number">3.5.</span> <span class="nav-text">工作流程</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">MengHan</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
