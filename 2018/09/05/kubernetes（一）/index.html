@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="docker,kubernetes," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="kubernetes名词解释">
+<meta name="keywords" content="docker,kubernetes">
+<meta property="og:type" content="article">
+<meta property="og:title" content="kubernetes（一）">
+<meta property="og:url" content="http://yoursite.com/2018/09/05/kubernetes（一）/index.html">
+<meta property="og:site_name" content="luoboh">
+<meta property="og:description" content="kubernetes名词解释">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/images/kubernetes.png">
+<meta property="og:updated_time" content="2018-09-05T09:17:36.090Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="kubernetes（一）">
+<meta name="twitter:description" content="kubernetes名词解释">
+<meta name="twitter:image" content="http://yoursite.com/images/kubernetes.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/09/05/kubernetes（一）/"/>
+
+
+
+
+
+  <title>kubernetes（一） | luoboh</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">luoboh</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/05/kubernetes（一）/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="MengHan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="luoboh">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">kubernetes（一）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-05T14:53:32+08:00">
+                2018-09-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kubernetes/" itemprop="url" rel="index">
+                    <span itemprop="name">kubernetes</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>kubernetes名词解释<br><a id="more"></a></p>
+<h1 id="kubernetes组件"><a href="#kubernetes组件" class="headerlink" title="kubernetes组件"></a>kubernetes组件</h1><p><img src="/images/kubernetes.png" alt=""></p>
+<h2 id="kubectl"><a href="#kubectl" class="headerlink" title="kubectl"></a>kubectl</h2><p>这是 kubernetes 提供的客户端程序，也是目前常用的和集群交互的方式。创建、查看、管理、删除、更新 pod、service、replication controller 都行，还有更多其他命令，可以查看帮助文档。  </p>
+<h2 id="etcd集群"><a href="#etcd集群" class="headerlink" title="etcd集群"></a>etcd集群</h2><p>etcd 是 kubernetes 存放集群状态和配置的地方，这是集群状态同步的关键，所有节点都是从 etcd 中获取集群中其他机器状态的，集群中所有容器的状态也是放在这里的。可用来搭建高可用集群，类似zookeeper，kubernetes 在 etcd 中存储的数据在 /registry 路径下。</p>
+<h2 id="Master组件"><a href="#Master组件" class="headerlink" title="Master组件"></a>Master组件</h2><p>kubernetes 是典型的 master-slave 模式，master 是整个集群的大脑，负责控制集群的方方面面。  </p>
+<h3 id="API-Server"><a href="#API-Server" class="headerlink" title="API Server"></a>API Server</h3><p>对外提供 kubernetes API，也就是 kubernetes 对外的统一入口。封装了 kubernetes 所有的逻辑，通过 RESTful 的方式供客户端使用，kubectl 就是最常用到的客户端程序。kubernetes内部所有模块也通过API　Server进行交互，各个模块通过APIServer将信息存入etcd，当需要获取这些数据或信息时，则通过API Server提供的REST接口来实现。　　</p>
+<h3 id="Scheduler"><a href="#Scheduler" class="headerlink" title="Scheduler"></a>Scheduler</h3><p>调度器：实现容器调度的组件，调度算法可以由用户自己实现。Scheduler 会收集并分析当前系统中所有 slave 节点的负载情况，在调度的时候作为决策的重要依据。<br>调度器监听 etcd 中 pods 目录的变化，当发现新的 pod 时，会利用调度算法把 pod 放到某个节点进行部署。可能的 scheduler 包括：<br>•    random：随机调度算法<br>•    round robin：轮询调度  </p>
+<h3 id="Controller-Manager-Server"><a href="#Controller-Manager-Server" class="headerlink" title="Controller Manager Server"></a>Controller Manager Server</h3><p>kubernetes所有资源对象的自动化控制中心，负责集群内的node、pod副本、服务端点（endpoint）、命名空间（namespace）、服务账号（service account）、资源定额（resource quota）等的管理，比如当某个node宕机时，controller manager会及时发现此故障并执行自动化修复流程，确保集群始终处于预期的工作状态。<br>包括Replication Controller，Node Controller，ResourceQuota Controller，Service Controller，Endpoint Controller等多个Controller，每一个Controller都负责一种具体的控制流程，并且由Controller Manager管理。  </p>
+<h2 id="Slave组件"><a href="#Slave组件" class="headerlink" title="Slave组件"></a>Slave组件</h2><h3 id="kubelet"><a href="#kubelet" class="headerlink" title="kubelet"></a>kubelet</h3><p>kubelet 是 slave 上核心的工作进程，负责容器和 pod 的实际管理工作（创建、删除等）以及和 master 通信，内容包括：<br>•    负责容器的创建、停止、删除等具体工作，也包括镜像下载、 volume 管理<br>•    从 etcd 中获取分配给自己的信息，根据其中的信息来控制容器以达到对应的目标状态<br>•    接受来自 master 的请求，汇报本节点的信息   </p>
+<h3 id="kube-proxy"><a href="#kube-proxy" class="headerlink" title="kube-proxy"></a>kube-proxy</h3><p>正如名字提示的一样，kube-proxy 为 pod 提供代理服务，用来实现 kubernetes 的 service 机制。每个 service 都会被分配一个虚拟 ip，当应用访问到 service ip 和端口的时候，会先发送到 kube-proxy，然后才转发到机器上的容器服务。 </p>
+<h1 id="kubernetes相关概念"><a href="#kubernetes相关概念" class="headerlink" title="kubernetes相关概念"></a>kubernetes相关概念</h1><h2 id="Pods"><a href="#Pods" class="headerlink" title="Pods"></a>Pods</h2><p>pods由一个或多个container组成，共同完成一个应用，pod的容器必须在同一个物理机上，共享cpu和内存，pod时动态的，可以被删除和创建，若要持久性保存pod信息，可以通过共享volume实现。同一个pod中的容器共享网络namespace,有相同的IP和端口。目前kubernetes的业务可以 分为长期伺服型（long-running），批处理型（batch）、节点后台支撑型（node-daemon）和有状态应用型（stateful application），分别对应的控制器为deployment、job、daemonSet和StatefulSet。Pod里的容器可以是docker容器，rkt容器甚至是virtlet管理的虚拟机。<br>podIP+container port=endpoint<br>kubernetes中的event，是一个事件的记录，可以通过kubectl describe pod XXX来查看pod的event，用以定位问题，排除故障<br>pod上可以配置计算资源，cpu和memory，以千分之一的cpu为最小单位，记为m，比如cpu配额定义为100-300m，表示0.1~0.3个cpu，是绝对值，memory配额也是绝对值，单位是内存字节数。</p>
+<h2 id="Replication-Controller"><a href="#Replication-Controller" class="headerlink" title="Replication Controller"></a>Replication Controller</h2><p>此处的RC与Controller Manager中的Replication Controller不同，此处的RC是一种kubernetes的一种资源对象，是Deployment的前身，而Controller Manager中的Replication Controller又叫做副本控制器，用于自动控制集群中的pod副本数量。<br>RC 保证在任意时刻都有指定数量的 pod 副本在运行。比如如果我们创建了一个 rc，指定某个 pod 运行 3 份：<br>刚开始的时候，rc 发现集群中没有这个 pod，它会创建 3 个 pod，<br>当某个 pod 不响应或者被删除了，它会检测到这个变化，然后新建一个正常的 pod（替换错误状态的 pod），保证系统有 3 个 pod 在运行<br>当错误的 pod 回复正常，或者用户又手动添加了几个 pod，rc 也会检测到，它会通过删除 pod 来保证只有 3 份副本在运行，但只适用于长期伺服型应用，比如web服务。<br>创建 replication controller 的时候，需要几个参数：<br>pod 的模板：用来创建应用的 pod 模板，在需要的时候根据这个模板创建 pod<br>replicas 副本数：要达到的目标状态，pod 需要运行几份<br>label：需要监控的 pod 的标签，通过比较 replicas 变量的值和标签实际发现的 pod 数量确定是否在目标状态  </p>
+<p>可以动态缩放pod数量：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl scale rc mysql --replicas=3</span><br></pre></td></tr></table></figure></p>
+<p>实现应用的滚动升级：每删除一个旧版本，就新增一个新版本，逐渐将旧版本全部升级为新版本   </p>
+<h2 id="Service"><a href="#Service" class="headerlink" title="Service"></a>Service</h2><p>service，也就是服务，是实际环境中对外提供服务的业务抽象。一个服务后端可能有多个容器提供支持，但是对外通过服务这一层只有一个接口，通过转发用户的请求到后端的应用上来实现。这样做的好处是：对外隐藏了后端的细节，使得扩展和维护变得更容易。<br>在 kubernetes 中，service 后面对应的是 pod，这种对应关系是通过 label 来匹配的。每个 service 会配置 label selector 对后端的 pod 进行选择，因此这种关系是动态的，pod 的添加和删除都会自动被关联进来。  </p>
+<p>当service发布出去后，kube-proxy相当于个软件负载均衡器，负责把对service的请求转发到后端某个pod实例上，并在内部实现服务的负载均衡和会话保持机制，但service不共用一个负载均衡器的IP，每个service分配了一个全局唯一的虚拟IP，成为clusterIP，这是一个伪造的IP，clusterIP无法被ping，因为没有实体网络对象相应，clusterIP+service port可以实现集群内部对service的访问，无法在外部使用，在service.yaml文件中，定义为NodePort，在所有node上打开同一个端口，便可通过集群任意节点IP+端口的形式在外部对集群进行访问；<br>此外，还要解决外部访问service的负载均衡问题，假设集群有10个node，外部请求只需访问负载均衡器的IP，由负载均衡器将流量转发到后端某个node的NodePort上，通常采用单独的组件实现负载均衡的功能，例如HAProxy或者Nginx</p>
+<h2 id="Labels"><a href="#Labels" class="headerlink" title="Labels"></a>Labels</h2><p>labels 就是标签的意思，主要用于过滤 pod、service 或者 replication controller，尤其是当集群的规模比较大的时候。<br>一个 label 就是一个键值对，比如 app：myweb，release：stable，用来表示用户自己定义的属性。给 pod 添加添加合理的标签会做到事半功倍的效果，增加可读性（通过 label 就能大致了解 pod 的功能）的同时也能方便查找对应的服务（service 和 replication controller 就是通过 label 来绑定后端 pod 的）。<br>Labels应用场景：  </p>
+<ol>
+<li>kube-controller进程通过rc上定义的label selector来筛选要监控的pod副本数量，实现pod副本数量始终符合预期设定的全自动控制流程</li>
+<li>kube-proxy进程通过service 的label selector选择对应的pod，自动建立起每个service到对应pod 的请求转发路由表，实现service的智能负载均衡机制</li>
+<li>对node定义特定的label，在pod的定义文件中使用NodeSelector这种标签调度策略，kube-scheduler进程可以实现pod的定向调度。</li>
+</ol>
+<h2 id="podIP、nodeIP、clusterIP"><a href="#podIP、nodeIP、clusterIP" class="headerlink" title="**podIP、nodeIP、clusterIP"></a>**podIP、nodeIP、clusterIP</h2><p>在kubernetes中创建pod，会有一个podIP，nodeIP（表示pod所在的node），发布服务会有一个serviceIP，创建成功后会有个clusterIP，service服务默认是clusterIP类型，此时的clusterIP只能内部访问使用，如果service Type是NodePort，同时给service指定一个nodePort的值，nodePort开放的是节点的端口，这个值的默认范围是30000-32767（这个值在API server的配置文件中，用–service-node-port-range定义），集群外就可以使用kubernetes任意一个节点的IP加上nodePort端口访问该服务了。创建pod指定应用程序的端口，比如mysql默认开放3306端口，web应用默认开放8080端口，这些端口都在pod上。  </p>
+<h1 id="kubernetes集群高可用"><a href="#kubernetes集群高可用" class="headerlink" title="kubernetes集群高可用"></a>kubernetes集群高可用</h1><p>高可用性的kubernetes集群，应用或者服务的高可用就是pod的高可用，这个副本控制器可以实现，master和node节点高可用需要由etcd实现，etcd需要是高可用集群，部署多个master节点，再加个负载均衡组件负责流量的转发，还需要一个全局网络组件负责集群通信（比如Flannel）。</p>
+<p>大神搭建高可用集群：<a href="https://gitee.com/kkomge/kubeadm-ha/tree/master" target="_blank" rel="noopener">https://gitee.com/kkomge/kubeadm-ha/tree/master</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/docker/" rel="tag"># docker</a>
+          
+            <a href="/tags/kubernetes/" rel="tag"># kubernetes</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/04/docker（一）/" rel="next" title="docker（一）">
+                <i class="fa fa-chevron-left"></i> docker（一）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="MengHan" />
+            
+              <p class="site-author-name" itemprop="name">MengHan</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+          <div>
+             <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=22754969&auto=1&height=66"></iframe>
+          </div>
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#kubernetes组件"><span class="nav-number">1.</span> <span class="nav-text">kubernetes组件</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#kubectl"><span class="nav-number">1.1.</span> <span class="nav-text">kubectl</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#etcd集群"><span class="nav-number">1.2.</span> <span class="nav-text">etcd集群</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Master组件"><span class="nav-number">1.3.</span> <span class="nav-text">Master组件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#API-Server"><span class="nav-number">1.3.1.</span> <span class="nav-text">API Server</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Scheduler"><span class="nav-number">1.3.2.</span> <span class="nav-text">Scheduler</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Controller-Manager-Server"><span class="nav-number">1.3.3.</span> <span class="nav-text">Controller Manager Server</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Slave组件"><span class="nav-number">1.4.</span> <span class="nav-text">Slave组件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#kubelet"><span class="nav-number">1.4.1.</span> <span class="nav-text">kubelet</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kube-proxy"><span class="nav-number">1.4.2.</span> <span class="nav-text">kube-proxy</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#kubernetes相关概念"><span class="nav-number">2.</span> <span class="nav-text">kubernetes相关概念</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Pods"><span class="nav-number">2.1.</span> <span class="nav-text">Pods</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Replication-Controller"><span class="nav-number">2.2.</span> <span class="nav-text">Replication Controller</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Service"><span class="nav-number">2.3.</span> <span class="nav-text">Service</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Labels"><span class="nav-number">2.4.</span> <span class="nav-text">Labels</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#podIP、nodeIP、clusterIP"><span class="nav-number">2.5.</span> <span class="nav-text">**podIP、nodeIP、clusterIP</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#kubernetes集群高可用"><span class="nav-number">3.</span> <span class="nav-text">kubernetes集群高可用</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">MengHan</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
