@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Linux,docker," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="docker内部结构以及主要技术的简单了解">
+<meta name="keywords" content="Linux,docker">
+<meta property="og:type" content="article">
+<meta property="og:title" content="docker（一）">
+<meta property="og:url" content="http://yoursite.com/2018/09/04/docker（一）/index.html">
+<meta property="og:site_name" content="luoboh">
+<meta property="og:description" content="docker内部结构以及主要技术的简单了解">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/images/docker_vs_vm.PNG">
+<meta property="og:image" content="http://yoursite.com/images/docker1.png">
+<meta property="og:image" content="http://yoursite.com/images/docker2.png">
+<meta property="og:image" content="http://yoursite.com/images/docker_images.png">
+<meta property="og:image" content="http://yoursite.com/images/docker_container.png">
+<meta property="og:image" content="http://yoursite.com/images/docker_running_container.png">
+<meta property="og:image" content="http://yoursite.com/images/docker_file_tree.png">
+<meta property="og:updated_time" content="2018-09-05T03:27:00.922Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="docker（一）">
+<meta name="twitter:description" content="docker内部结构以及主要技术的简单了解">
+<meta name="twitter:image" content="http://yoursite.com/images/docker_vs_vm.PNG">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/09/04/docker（一）/"/>
+
+
+
+
+
+  <title>docker（一） | luoboh</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">luoboh</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/04/docker（一）/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="MengHan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="luoboh">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">docker（一）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-04T16:06:02+08:00">
+                2018-09-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/docker/" itemprop="url" rel="index">
+                    <span itemprop="name">docker</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>docker内部结构以及主要技术的简单了解<br><a id="more"></a></p>
+<h1 id="docker和传统虚拟机的区别"><a href="#docker和传统虚拟机的区别" class="headerlink" title="docker和传统虚拟机的区别"></a>docker和传统虚拟机的区别</h1><p><img src="/images/docker_vs_vm.PNG" alt=""></p>
+<p>虚拟化是云计算的基础，虚拟化使得在一台物理的服务器上可以跑多台虚拟机，虚拟机共享物理机的 CPU、内存、IO 硬件资源，但逻辑上虚拟机之间是相互隔离的。<br>以QEMU-KVM为例，Hypervisor是一种在物理机上建立虚拟机的技术，kvm 这种技术的一个实现，kvm是基于linux内核的，可以实现对物理机上cpu和内存的虚拟化，需要物理机cpu和内存相关技术的支持，kvm将cpu和内存虚拟化，并提供操作虚拟化CPU和内存的接口，QEMU利用这些接口完成虚拟机的创建，但kvm不能虚拟其他硬件设备，QEMU还有模拟IO设备（磁盘，网卡，显卡等）的作用，KVM加上QEMU后就是完整意义上的服务器虚拟化，QEMU是运行在用户空间的，KVM运行在Linux内核上，当然，由于QEMU模拟io设备效率不高的原因，现在常常采用半虚拟化的virtio方式来虚拟IO设备。<br>这种传统的虚拟机是在底层对宿主机硬件的虚拟，docker直接使用硬件资源，但按进程对资源进行了隔离，更深入的区别还有待学习，总之docker会更加轻量，效率更高，秒级别的容器启动，回收也很方便。</p>
+<h1 id="docker结构"><a href="#docker结构" class="headerlink" title="docker结构"></a>docker结构</h1><p>Docker Engine是一个c/s架构的应用<br><img src="/images/docker1.png" alt=""></p>
+<p>server/docker daemon：是一个常驻进程，是docker的守护进程，负责接收并分发执行docker的命令<br>REST API：REST风格的API，REST 指的是一组架构约束条件和原则,完成client和server的交互<br>Client/docker CLI：容器和镜像的管理，为用户提供统一的操作界面</p>
+<p><img src="/images/docker2.png" alt=""><br>Docker使用C/S架构，Client 通过接口与Server进程通信实现容器的构建，运行和发布。Client可以是命令行工具docker，也可以是任何遵循了docker API的客户端，client和server可以运行在同一台集群，也可以通过跨主机实现远程通信</p>
+<h1 id="docker名词"><a href="#docker名词" class="headerlink" title="docker名词"></a>docker名词</h1><h2 id="镜像（images）"><a href="#镜像（images）" class="headerlink" title="镜像（images）"></a>镜像（images）</h2><p>镜像是一堆只读层（read-only layer）的统一视角<br><img src="/images/docker_images.png" alt=""><br>左边的多层中除了最下一层，其他层都有一个指向下一层的指针，统一文件系统（union file system）技术将左边不同层整合为一个文件系统，为这些层提供了一个统一的视角，这样就隐藏了多层的存在，在用户的角度看来，只存在一个文件系统。 我们可以在图片的右边看到这个视角的形式。  </p>
+<h2 id="容器（container）"><a href="#容器（container）" class="headerlink" title="容器（container）"></a>容器（container）</h2><p>容器也是一堆层的一个统一视角，但容器的最上一层是可读可写的，容器=镜像+可写层<br><img src="/images/docker_container.png" alt="">   </p>
+<h2 id="运行时容器（running-container）"><a href="#运行时容器（running-container）" class="headerlink" title="运行时容器（running container）"></a>运行时容器（running container）</h2><p>一个可写的统一文件系统加上隔离的进程空间和其中的进程，一个容器中的进程可能会对文件进行修改、删除、创建，这些改变都将作用于可读写层（read-write layer）<br><img src="/images/docker_running_container.png" alt="">   </p>
+<h1 id="docker镜像特点"><a href="#docker镜像特点" class="headerlink" title="docker镜像特点"></a>docker镜像特点</h1><h2 id="分层"><a href="#分层" class="headerlink" title="分层"></a>分层</h2><p>docker镜像是采用分层的方式构建的，由文件层构成，分层结构使镜像轻量化。写操作在最上层完成，不覆写下层文件，原始文件仍会存在，但会被新版文件层隐藏，不同镜像可以共享镜像层。</p>
+<h2 id="写时复制"><a href="#写时复制" class="headerlink" title="写时复制"></a>写时复制</h2><p>在Linux中的fork（）函数会复制一个进程，fork之后会有一个父进程和子进程，一个进程有物理空间和虚拟空间，虚拟空间有代码，数据，堆，栈，分别有相应的数据结构，物理空间（内存区）指存放代码，数据，堆栈的区域，linux中的写时复制copy-on-write（COW）技术，是指在系统调用fork（）之后，为子进程创建与父进程一样的虚拟空间，但物理空间与父进程共享，只有当父子进程需要做不同的事而对代码或数据等做出改变时，才为子进程创建自己的物理空间。<br>docker使用写时复制技术，多个容器之间可以使用同一个镜像，每个容器在启动时不需要复制整份镜像文件，只需要将镜像将只读的方式挂载到一个挂载点上，再在上面覆盖一个可读写的容器层，在未改变文件内容时，所有容器共享一份数据，只有在容器运行过程中文件系统发生变化时，才会把变化的文件内容写到可读写层，并隐藏只读层的老版本文件。</p>
+<h3 id="进程、线程、多线程"><a href="#进程、线程、多线程" class="headerlink" title="**进程、线程、多线程"></a>**进程、线程、多线程</h3><p>进程是一个执行中的程序，第一，进程是一个实体。每一个进程都有它自己的地址空间，一般情况下，包括文本区域（text region）、数据区域（data region）和堆栈（stack region）。文本区域存储处理器执行的代码，即静态的程序代码；数据区域存储变量和进程执行期间使用的动态分配的内存；堆栈区域存储着活动过程调用的指令和本地变量。第二，进程是一个“执行中的程序”。程序是一个没有生命的实体，只有处理器赋予程序生命时，它才能成为一个活动的实体，我们称其为进程。 进程有3个状态：就绪，运行，阻塞，就绪状态是指除了cpu外所有资源都准备好了，分配了CPU资源就可以运行；阻塞是指程序继续运行的条件不够，比如需要i/o操作，等待输入的状态就是阻塞<br>线程和多线程：一个进程至少有一个线程，线程是一个程序片段，是独立运行和独立调度的基本单位，多线程是为了提高资源利用效率，多个任务同时完成</p>
+<h3 id="进程和线程的区别"><a href="#进程和线程的区别" class="headerlink" title="**进程和线程的区别"></a>**进程和线程的区别</h3><p>进程和线程的主要差别在于它们是不同的操作系统资源管理方式。进程有独立的地址空间，一个进程崩溃后，在保护模式下不会对其它进程产生影响，而线程只是一个进程中的不同执行路径。线程有自己的堆栈和局部变量，但线程之间没有单独的地址空间，一个线程死掉就等于整个进程死掉，所以多进程的程序要比多线程的程序健壮，但在进程切换时，耗费资源较大，效率要差一些。但对于一些要求同时进行并且又要共享某些变量的并发操作，只能用线程，不能用进程。</p>
+<p>1) 简而言之,一个程序至少有一个进程,一个进程至少有一个线程。<br>2) 线程的划分尺度小于进程，使得多线程程序的并发性高。<br>3) 另外，进程在执行过程中拥有独立的内存单元，而多个线程共享内存，从而极大地提高了程序的运行效率。<br>4) 线程在执行过程中与进程还是有区别的。每个独立的线程有一个程序运行的入口、顺序执行序列和程序的出口。但是线程不能够独立执行，必须依存在应用程序中，由应用程序提供多个线程执行控制。<br>5) 从逻辑角度来看，多线程的意义在于一个应用程序中，有多个执行部分可以同时执行。但操作系统并没有将多个线程看做多个独立的应用，来实现进程的调度和管理以及资源分配。这就是进程和线程的重要区别。</p>
+<h2 id="内容寻址"><a href="#内容寻址" class="headerlink" title="内容寻址"></a>内容寻址</h2><p>内容寻址存储（content-addressable storage）机制是指根据文件内容来索引镜像和镜像层，对镜像层内容计算校验和，生成一个内容哈希值，并以此哈希值代替之前的UUID作为镜像层的唯一标志。这种方式提高了镜像的安全性，可以用于检测镜像的完整性，一定程度上减少了镜像ID的冲突，增强了镜像的共享。</p>
+<h2 id="联合挂载"><a href="#联合挂载" class="headerlink" title="联合挂载"></a>联合挂载</h2><p>联合挂载技术可以在一个挂载点同时挂载多个文件系统，将挂载点的原目录与被挂载内容进行整合，使得最终可见文件系统将包含整合之后的各层文件和目录。<br>联合挂载是用于将多个镜像层的文件系统挂载到一个挂载点来实现一个统一文件系统视图的途径，是下层存储驱动（如aufs、overlay等）实现分层合并的方式。</p>
+<h3 id="挂载"><a href="#挂载" class="headerlink" title="**挂载"></a>**挂载</h3><p>linux一切都是文件，将一个文件系统的顶层目录挂到另一个文件系统的子目录上，使它们成为一个整体，称为挂载。把该子目录称为挂载点。</p>
+<h1 id="docker核心技术"><a href="#docker核心技术" class="headerlink" title="docker核心技术"></a>docker核心技术</h1><p>docker核心技术有namespace、cgroups、union file system，docker容器本质上是进程，其中namespace实现进程各种资源的隔离，cgroups实现进程资源的限制，union file system实现上文的镜像等内容，下面是namespace和cgroups的简单介绍。更加详细的讲解见：<a href="http://dockone.io/article/2941" target="_blank" rel="noopener">http://dockone.io/article/2941</a></p>
+<h2 id="namespace"><a href="#namespace" class="headerlink" title="namespace"></a>namespace</h2><p>linux中使用clone()来创建一个独立namespace的进程，是Linux系统调用fork（）的一种更通用的方式，通过CLONE_*的flag（标志位）实现进程不同方面的隔离，常用的有CLONE_NEWUTS(主机名和域名)，CLONE_NEWIPC(信号量，消息队列和共享内存等)，CLONE_PID(进程号)，CLONE_NEWNET(网络设备，网络栈和端口等)，CLONE_NEWNS(挂载点即文件系统)，CLONE_NEWUSER(用户和用户组)。  </p>
+<h2 id="cgroups"><a href="#cgroups" class="headerlink" title="cgroups"></a>cgroups</h2><p>cgroups控制进程的cpu，内存，磁盘I/O，网络带宽等资源的使用，cgroups中的资源控制以cgroup为单位实现，cgroup表示按某种资源标准控制划分而成的任务组，包含一个或多个子系统，cgroup中的子系统就是一个资源控制调度器，比如cpu子系统，内存子系统，分别控制cpu，内存的使用。cgroup之间存在层级关系，是一个树状结构，每个层级通过绑定对应的子系统进行资源控制。一个系统中的进程在cgroup中称为一个任务，一个任务可以随时加入或者退出一个cgroup，当加入一个cgroup时，在cgroup绑定的相应的子系统文件夹中的docker文件夹里会出现容器的进程ID，容器运行时，子系统中的控制文件便会对容器的资源使用进程控制。</p>
+<h1 id="docker容器通信"><a href="#docker容器通信" class="headerlink" title="docker容器通信"></a>docker容器通信</h1><p>详细讲解见：<a href="http://dockone.io/article/1156" target="_blank" rel="noopener">http://dockone.io/article/1156</a></p>
+<h2 id="在同一docker宿主机上的容器通信"><a href="#在同一docker宿主机上的容器通信" class="headerlink" title="在同一docker宿主机上的容器通信"></a>在同一docker宿主机上的容器通信</h2><p>可以使用bridge网络，有以下4种通信方式：</p>
+<h3 id="端口公开（Exposing-Ports）"><a href="#端口公开（Exposing-Ports）" class="headerlink" title="端口公开（Exposing Ports）"></a>端口公开（Exposing Ports）</h3><p>比如将容器的80端口（HTTP）公开给其他容器</p>
+<h3 id="端口绑定（Port-Binding）"><a href="#端口绑定（Port-Binding）" class="headerlink" title="端口绑定（Port Binding）"></a>端口绑定（Port Binding）</h3><p>比如将容器的HTTP端口公开给宿主机及其网络，需要将容器的80端口绑定到宿主机的8080端口<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo docker run -itd -p 8080:80 --name=server2 server_img /bin/bash</span><br></pre></td></tr></table></figure></p>
+<h3 id="容器链接（Linking-Containers）"><a href="#容器链接（Linking-Containers）" class="headerlink" title="容器链接（Linking Containers）"></a>容器链接（Linking Containers）</h3><p>可以让一个容器链接到其他容器，docker通过一些环境变量来关联容器<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo docker run -itd --link server3 --name=client3 client_img /bin/bash</span><br></pre></td></tr></table></figure></p>
+<h3 id="用户自定义网络（User-Defined）"><a href="#用户自定义网络（User-Defined）" class="headerlink" title="用户自定义网络（User-Defined）"></a>用户自定义网络（User-Defined）</h3><p>新建一个bridge网络backend  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo docker network create backend</span><br></pre></td></tr></table></figure>
+<p>将容器加入backend网络  </p>
+<pre><code>$ sudo docker run -itd --net=backend --name=server server_img /bin/bash
+</code></pre><p>之后加入backend网络的容器可以直接通过容器名（比如server）互相访问</p>
+<h2 id="不同主机上容器通信"><a href="#不同主机上容器通信" class="headerlink" title="不同主机上容器通信"></a>不同主机上容器通信</h2><p>docker提供了overlay全局网络驱动实现多主机网络，这些docker主机可以存在于不同的数据中心或者不同的云服务提供商。要实现一个overlay网络，需要以下几个条件：<br>（1）一台内核版本高于3.16的主机<br>（2）关键的key-value存储（例如 etcd, Consul和 Apache ZooKeeper）<br>（3）集群内的主机可以保证连接到以上的key-value存储<br>（4）每一个集群内的主机都正确配置了基于 Docker Engine的后台实例   </p>
+<h2 id="endpoint"><a href="#endpoint" class="headerlink" title="**endpoint"></a>**endpoint</h2><p><a href="http://192.168.1.100:80，：前面部分是IP，作用是找到对应的服务器，：后面的80是端口，作用是找到服务器上的具体应用，80端口对应的是web服务器应用，这个地址的作用就是找到IP地址为192.168.1.100的服务器上的80端口web服务器应用。Socket就是唯一标识的IP地址和端口号组合而成的标识符套接字，是为了实现通信过程而建立成来的通信管道，其真实的代表是客户端和服务器端的一个通信进程，双方进程通过socket进行通信，而通信的规则采用指定的协议。socket只是一种连接模式，不是协议。" target="_blank" rel="noopener">http://192.168.1.100:80，：前面部分是IP，作用是找到对应的服务器，：后面的80是端口，作用是找到服务器上的具体应用，80端口对应的是web服务器应用，这个地址的作用就是找到IP地址为192.168.1.100的服务器上的80端口web服务器应用。Socket就是唯一标识的IP地址和端口号组合而成的标识符套接字，是为了实现通信过程而建立成来的通信管道，其真实的代表是客户端和服务器端的一个通信进程，双方进程通过socket进行通信，而通信的规则采用指定的协议。socket只是一种连接模式，不是协议。</a>   </p>
+<h2 id="TCP-IP"><a href="#TCP-IP" class="headerlink" title="**TCP/IP"></a>**TCP/IP</h2><p>TCP/IP是个协议组，有4层，从下到上依次是网络接口层，网络层，传输层，应用层，IP协议属于网络层，TCP协议属于传输层，HTTP协议属于应用层，应用层还有FTP、TELNET、SMTP、DNS等协议。域名系统DNS(Domain Name System)是因特网使用的命名系统，用来把便于人们使用的机器名字转换成为IP地址。baidu.com就是一个域名，通信时解析出这个域名对应的IP地址。   </p>
+<h2 id="URL（Uniform-Resource-Locator）"><a href="#URL（Uniform-Resource-Locator）" class="headerlink" title="**URL（Uniform Resource Locator）"></a>**URL（Uniform Resource Locator）</h2><p>URL（Uniform Resource Locator）用于描述一个网络上的资源，schema://host[:port#]/path/…/[?query-string][#anchor]<br>scheme:               指定低层使用的协议(例如：http, https, ftp)<br>host  :                 HTTP服务器的IP地址或者域名<br>port#  :               HTTP服务器的默认端口是80，这种情况下端口号可以省略。如果使用了别的端口，必须指明，例如 <a href="http://www.cnblogs.com:8080/" target="_blank" rel="noopener">http://www.cnblogs.com:8080/</a><br>path     :              访问资源的路径<br>query-string :      发送给http服务器的数据<br>anchor-    :         锚<br>URL 的一个例子<br><a href="http://www.mywebsite.com/sj/test/test.aspx?name=sviergn&amp;x=true#stuff" target="_blank" rel="noopener">http://www.mywebsite.com/sj/test/test.aspx?name=sviergn&amp;x=true#stuff</a></p>
+<h2 id="SSL-TSL-HTTPS"><a href="#SSL-TSL-HTTPS" class="headerlink" title="** SSL/TSL/HTTPS"></a>** SSL/TSL/HTTPS</h2><p>SSL 是指安全套接字层，简而言之，它是一项标准技术，可确保互联网连接安全，保护两个系统之间发送的任何敏感数据，防止网络犯罪分子读取和修改任何传输信息，包括个人资料。两个系统可能是指服务器和客户端（例如，浏览器和购物网站），或两个服务器之间（例如，含个人身份信息或工资单信息的应用程序）。TLS（传输层安全）是更为安全的升级版 SSL。由于 SSL 这一术语更为常用，因此我们仍然将我们的安全证书称作 SSL。如果某个网站受 SSL 证书保护，其相应的 URL 中会显示 HTTPS（超文本传输安全协议）。  </p>
+<h1 id="docker工作过程"><a href="#docker工作过程" class="headerlink" title="docker工作过程"></a>docker工作过程</h1><p>从一个docker命令开始，docker [flag] command [args…],首先docker命令有两种模式，client和daemon，当command是daemon时才是daemon模式，其他时候默认为client模式。<br>根据docker命令解析flag信息，调用api/client/NewDockerCLi创建一个client实例，将命令映射到方法，执行方法，发起请求，进入daemon模式，首先启动一个API Server，它工作在client通过-H这个flag制定的socket上面，负责client和daemon的通信，然后docker使用New Daemon方法创建一个daemon对象来保存信息和处理业务逻辑，最后将上述APIServer与daemon对象绑定，接收并处理client的请求。这个daemon对象的创建涉及到容器的各个方面的配置信息，表现方式为在dockers根目录下创建并初始化一系列跟容器文件系统密切相关的目录和文件，如下：<br><img src="/images/docker_file_tree.png" alt="">  </p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/docker/" rel="tag"># docker</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/03/hadoop架构和容错/" rel="next" title="Hadoop架构和容错">
+                <i class="fa fa-chevron-left"></i> Hadoop架构和容错
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="MengHan" />
+            
+              <p class="site-author-name" itemprop="name">MengHan</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+          <div>
+             <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=22754969&auto=1&height=66"></iframe>
+          </div>
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#docker和传统虚拟机的区别"><span class="nav-number">1.</span> <span class="nav-text">docker和传统虚拟机的区别</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#docker结构"><span class="nav-number">2.</span> <span class="nav-text">docker结构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#docker名词"><span class="nav-number">3.</span> <span class="nav-text">docker名词</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#镜像（images）"><span class="nav-number">3.1.</span> <span class="nav-text">镜像（images）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#容器（container）"><span class="nav-number">3.2.</span> <span class="nav-text">容器（container）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#运行时容器（running-container）"><span class="nav-number">3.3.</span> <span class="nav-text">运行时容器（running container）</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#docker镜像特点"><span class="nav-number">4.</span> <span class="nav-text">docker镜像特点</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#分层"><span class="nav-number">4.1.</span> <span class="nav-text">分层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#写时复制"><span class="nav-number">4.2.</span> <span class="nav-text">写时复制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#进程、线程、多线程"><span class="nav-number">4.2.1.</span> <span class="nav-text">**进程、线程、多线程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#进程和线程的区别"><span class="nav-number">4.2.2.</span> <span class="nav-text">**进程和线程的区别</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内容寻址"><span class="nav-number">4.3.</span> <span class="nav-text">内容寻址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#联合挂载"><span class="nav-number">4.4.</span> <span class="nav-text">联合挂载</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#挂载"><span class="nav-number">4.4.1.</span> <span class="nav-text">**挂载</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#docker核心技术"><span class="nav-number">5.</span> <span class="nav-text">docker核心技术</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#namespace"><span class="nav-number">5.1.</span> <span class="nav-text">namespace</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cgroups"><span class="nav-number">5.2.</span> <span class="nav-text">cgroups</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#docker容器通信"><span class="nav-number">6.</span> <span class="nav-text">docker容器通信</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#在同一docker宿主机上的容器通信"><span class="nav-number">6.1.</span> <span class="nav-text">在同一docker宿主机上的容器通信</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#端口公开（Exposing-Ports）"><span class="nav-number">6.1.1.</span> <span class="nav-text">端口公开（Exposing Ports）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#端口绑定（Port-Binding）"><span class="nav-number">6.1.2.</span> <span class="nav-text">端口绑定（Port Binding）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#容器链接（Linking-Containers）"><span class="nav-number">6.1.3.</span> <span class="nav-text">容器链接（Linking Containers）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#用户自定义网络（User-Defined）"><span class="nav-number">6.1.4.</span> <span class="nav-text">用户自定义网络（User-Defined）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#不同主机上容器通信"><span class="nav-number">6.2.</span> <span class="nav-text">不同主机上容器通信</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#endpoint"><span class="nav-number">6.3.</span> <span class="nav-text">**endpoint</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP-IP"><span class="nav-number">6.4.</span> <span class="nav-text">**TCP/IP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#URL（Uniform-Resource-Locator）"><span class="nav-number">6.5.</span> <span class="nav-text">**URL（Uniform Resource Locator）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SSL-TSL-HTTPS"><span class="nav-number">6.6.</span> <span class="nav-text">** SSL/TSL/HTTPS</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#docker工作过程"><span class="nav-number">7.</span> <span class="nav-text">docker工作过程</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">MengHan</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
